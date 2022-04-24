@@ -1,6 +1,14 @@
 import requests
 import re
 import datetime
+import email
+import smtplib
+from email.mime.text import MIMEText
+# 负责构造图片
+from email.mime.image import MIMEImage
+# 负责将多个对象集合起来
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
 
 api = 'https://api.github.com/repos/MicrosoftDocs/azure-docs/commits'
 weburl= 'https://github.com/MicrosoftDocs/azure-docs/articles/aks'
@@ -10,13 +18,14 @@ api2 = 'https://api.github.com/repos/MicrosoftDocs/azure-docs/commits/bc2553acb7
 #获取当前时间前一天的日期
 def get_yesterday_date():
     today = datetime.date.today()
-    yesterday = today - datetime.timedelta(days=1)
+    yesterday = today - datetime.timedelta(days=3)
     yesterday_date = yesterday.strftime('%Y-%m-%d')
     return yesterday_date
+# print(get_yesterday_date())
 
 path='/articles/aks'
-since_date='2022-04-02'
-
+since_date=get_yesterday_date()
+print(datetime.datetime.fromtimestamp(1650536841))
 parameter={
     'path': path,
     'since': since_date
@@ -29,12 +38,14 @@ parameter={
 # 创建字典
 
     
-def get_commit_info_for_chosen_repo(repo_api):
+def get_commit_info_for_chosen_repo(repo_api,parameter):
     request_parameter = parameter
-    commit_info=requests.get(repo_api,params=request_parameter)
+    all_commit_info=requests.get(repo_api,params=request_parameter)
     #jso格式显示
-    commit_info_json=commit_info.json()
-    return commit_info_json
+    all_commit_info_json=all_commit_info.json()
+    return all_commit_info_json
+a = get_commit_info_for_chosen_repo(api,parameter)
+print(a)
 
 def get_commit_time(commit_api):
     r2 = requests.get(commit_api)
@@ -46,6 +57,28 @@ def get_commit_date(commit_time):
     return commit_date[0]
 #测试函数  
 # print(get_commit_date(get_commit_time(api2)))
+def get_commit_changed_file_from_commit_url(commit_url):
+    commit_info = requests.get(commit_url)
+    print(commit_info.json())
+    # changefiles = commit_info.json()['files']
+    # for changefile in iter(changefiles):
+    #     if changefile['filename'].find('aks')!= -1:
+    #         print(changefile['filename'])
+    #         # print(changefile['patch'])
+
+# def main():
+#     commit_list = get_commit_info_for_chosen_repo(api,parameter)
+#     if len(commit_list) != 0:
+#         for commit in iter(commit_list):
+#             print("Commit Topic: "+ commit['commit']['message'])
+#             commit_url = commit['url']
+#             # commit_time = get_commit_time(commit_url)
+#             # commit_date = get_commit_date(commit_time)
+#             # print(commit_date)
+#             get_commit_changed_file_from_commit_url(commit_url)
+
+# if __name__=="__main__":
+#     main()
 
 
 
